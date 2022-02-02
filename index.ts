@@ -23,10 +23,25 @@ const createPDFBytesArray = async (pdfPaths: string[]) => {
 
 export const main = async () => {
   const newPDFDoc = await PDFDocument.create();
-  const pdfBytes = await createPDFBytesArray([
-    "/assets/MATH4404_Theorems.pdf",
-    "/assets/Mazevo_Report_Placeholder.pdf",
-  ]);
+  const pdfFiles: string[] = [];
+
+  const readFiles = new Promise<void>((res, rej) => {
+    fs.readdir(path.join(__dirname, "assets"), (err, files) => {
+      if (err) {
+        rej(err);
+      }
+      for (const file of files) {
+        if (!file.includes("/") && file.endsWith(".pdf")) {
+          pdfFiles.push(`/assets/${file}`);
+        }
+      }
+      res();
+    });
+  });
+
+  await readFiles;
+
+  const pdfBytes = await createPDFBytesArray(pdfFiles);
 
   for (const bytes of pdfBytes) {
     const pdfDocToInsert = await PDFDocument.load(bytes);
